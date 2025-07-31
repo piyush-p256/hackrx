@@ -2,12 +2,13 @@ FROM python:3.10-slim-buster
 
 WORKDIR /app
 COPY . /app
-  
-RUN apt update -y && apt install awscli -y
 
-RUN apt-get update && apt-get install ffmpeg libsm6 libxext6 unzip -y && pip install -r requirements.txt
+# Fix broken buster repo URLs and install system dependencies
+RUN sed -i 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' /etc/apt/sources.list && \
+    sed -i '/security.debian.org/d' /etc/apt/sources.list && \
+    apt-get update -o Acquire::Check-Valid-Until=false && \
+    apt-get install -y awscli ffmpeg libsm6 libxext6 unzip && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 5000
-
-
-CMD ["python3", "app.py"]
+# Install Python dependencies
+RUN pip i
